@@ -92,8 +92,17 @@ class ApiClient {
   }
 
   async getJobDetail(jobId: string): Promise<AdminJobDetailResponse> {
-    const response = await this.adminClient.get<AdminJobDetailResponse>(
-      `/api/admin/jobs/${jobId}`
+    // Use a direct axios call instead of adminClient to avoid 401 redirect
+    // This allows unauthenticated users to view job details
+    const keys = this.getStoredKeys();
+    const headers: Record<string, string> = {};
+    if (keys.adminApiKey) {
+      headers.Authorization = `Bearer ${keys.adminApiKey}`;
+    }
+    
+    const response = await axios.get<AdminJobDetailResponse>(
+      `${API_BASE_URL}/api/admin/jobs/${jobId}`,
+      { headers }
     );
     return response.data;
   }

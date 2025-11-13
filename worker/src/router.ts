@@ -378,17 +378,10 @@ export async function handleRequest(request: Request, env: Env): Promise<Respons
       });
     }
 
-    // Admin job detail endpoint
+    // Admin job detail endpoint (auth optional for GET, required for DELETE)
     const adminJobMatch = path.match(/^\/api\/admin\/jobs\/([^/]+)$/);
     if (adminJobMatch && method === 'GET') {
-      const auth = verifyAuth(request, env, 'admin');
-      if (!auth.authorized) {
-        return new Response(JSON.stringify(auth.error), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
+      // Allow unauthenticated access to view job details
       const jobId = adminJobMatch[1];
       const response = await handleGetJobDetail(request, env, jobId);
       const responseHeaders = new Headers(response.headers);

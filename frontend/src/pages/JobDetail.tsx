@@ -21,6 +21,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/client';
 import { RefreshButton } from '../components/RefreshButton';
 import { formatRelativeTime } from '../utils/formatTime';
+import { useApiKeys } from '../hooks/useApiKeys';
 import type { AdminJobDetailResponse, JobStatus } from '../types';
 
 const STATUS_COLORS: Record<JobStatus, 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning'> = {
@@ -35,6 +36,7 @@ const STATUS_COLORS: Record<JobStatus, 'default' | 'primary' | 'secondary' | 'er
 export function JobDetail() {
   const { jobId } = useParams<{ jobId: string }>();
   const navigate = useNavigate();
+  const { hasAdminKey } = useApiKeys();
   const [job, setJob] = useState<AdminJobDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,16 +135,21 @@ export function JobDetail() {
             Back
           </Button>
           <Typography variant="h4">Job Details</Typography>
+          {!hasAdminKey() && (
+            <Chip label="Read Only" size="small" color="default" />
+          )}
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button
-            variant="outlined"
-            color="error"
-            startIcon={<DeleteIcon />}
-            onClick={handleDeleteClick}
-          >
-            Delete Job
-          </Button>
+          {hasAdminKey() && (
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={handleDeleteClick}
+            >
+              Delete Job
+            </Button>
+          )}
           <RefreshButton onRefresh={loadJob} loading={loading} />
         </Box>
       </Box>
