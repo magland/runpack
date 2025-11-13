@@ -21,9 +21,22 @@ Runpack was created to enable on-demand computation for [Neurosift](https://neur
 3. The result is cached, so subsequent visitors can instantly access the same visualization without re-computation
 4. This architecture allows resource-intensive computations to be performed on-demand only when needed, while still providing fast access to previously computed results
 
-Basic example of a Figpack raster plot view in Neurosift: [FigpackRasterPlot](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:FigpackRasterPlot|/units)
+### Raster Plots
 
-Compared with the inefficient default raster plot that requires no precomputation: [Raster](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:Raster|/units)
+**Figpack raster plot** (fast, smooth, interactive):  
+[View optimized raster plot](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:FigpackRasterPlot|/units)
+
+**Default raster plot** (slow, unoptimized):  
+[View basic raster plot](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:Raster|/units)
+
+### Video Previews
+
+**Figpack video preview** (optimized for browser playback):  
+[View optimized video preview](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/0040441c-b07e-4d79-a24b-f356633306aa/download/&dandisetId=001525&dandisetVersion=draft&tab=view:FigpackVideoPreview|/acquisition/StrobeImaging)
+
+**Default streaming view** (inefficient):  
+[View default streaming](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/0040441c-b07e-4d79-a24b-f356633306aa/download/&dandisetId=001525&dandisetVersion=draft&tab=/acquisition/StrobeImaging)
+
 
 ### General Purpose System
 
