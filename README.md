@@ -6,7 +6,7 @@ A distributed job computation and caching system built with Cloudflare Workers, 
 
 ### Motivation: On-Demand Computation for Neurosift
 
-Neurosift is designed to visualize NWB datasets directly from remote storage. For many types of data, this “stream-from-the-source” approach works well: Neurosift can load the relevant portion of the NWB file on the fly and display it interactively.
+[Neurosift]() is designed to visualize NWB datasets directly from remote storage. For many types of data, this “stream-from-the-source” approach works well: Neurosift can load the relevant portion of the NWB file on the fly and display it interactively.
 
 However, some data objects, especially large or structurally complex ones, cannot be efficiently streamed or visualized this way. Examples include large units tables or high-resolution video recordings. In these cases, repeatedly fetching raw data from the source NWB file is too slow and too computationally expensive for interactive use.
 
