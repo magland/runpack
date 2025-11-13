@@ -4,12 +4,14 @@ from typing import Dict, Type
 from .base import JobHandler
 from .hello_world import HelloWorldJob
 from .figpack_nwb_raster_plot import FigpackNwbRasterPlotJob
+from .figpack_nwb_video_preview import FigpackNwbVideoPreviewJob
 
 
 # Registry mapping job types to handler classes
 JOB_HANDLERS: Dict[str, Type[JobHandler]] = {
     'hello_world': HelloWorldJob,
     'figpack_nwb_raster_plot': FigpackNwbRasterPlotJob,
+    'figpack_nwb_video_preview': FigpackNwbVideoPreviewJob,
 }
 
 
