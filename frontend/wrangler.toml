@@ -1,0 +1,4 @@
+name = "runpack-admin"
+compatibility_date = "2025-11-12"
+
+pages_build_output_dir = "dist"

@@ -1,0 +1,22 @@
+name = "runpack-worker"
+main = "src/index.ts"
+compatibility_date = "2024-11-12"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "runpack-db"
+database_id = "a1b64bcd-af7c-44ce-81eb-d6c57c5212d3" # Replace with actual database ID after creating it
+
+# # observability logs
+# [observability.logs]
+# enabled = true
+# head_sampling_rate = 1.0
+# invocation_logs = true
+
+
+# Environment variables for API keys
+# Set these using: wrangler secret put <SECRET_NAME>
+# SUBMIT_API_KEY - API key for job submission
+# RUNNER_API_KEY - API key for job runners
+# ADMIN_API_KEY - API key for admin endpoints
