@@ -46,6 +46,8 @@ This workflow ensures that computationally heavy preprocessing is done only when
 **Default ImageSeries** (inefficient direct NWB streaming):
 [View default view of ImageSeries](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/0040441c-b07e-4d79-a24b-f356633306aa/download/&dandisetId=001525&dandisetVersion=draft&tab=/acquisition/StrobeImaging)
 
+**Another Example**: [Video from Dandiset 01462](http://localhost:5173/nwb?url=https://api.dandiarchive.org/api/assets/9b789a2a-f079-4dfa-971e-5e6b1156c55f/download/&dandisetId=001462&dandisetVersion=draft&tab=view:FigpackVideoPreview|/acquisition/BehavioralVideo)
+
 
 ### General Purpose System
 
