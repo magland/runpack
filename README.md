@@ -4,7 +4,30 @@ A distributed job computation and caching system built with Cloudflare Workers, 
 
 ## Overview
 
-Runpack is a flexible system for computing and caching diverse computational tasks. It provides:
+### Motivation: On-Demand Computation for Neurosift
+
+Runpack was created to enable on-demand computation for [Neurosift](https://neurosift.app), a neurophysiology data visualization platform. The primary use case is to support advanced, interactive visualizations using [Figpack](https://flatironinstitute.github.io/figpack/) that require computational backend processing.
+
+**The Challenge:** When visualizing neurophysiology data, for example neural units tables containing hundreds or thousands of neurons recorded over long durations, traditional visualization approaches become inefficient and impractical. Rendering a complete raster plot of all spike times for such datasets in a browser is computationally prohibitive.
+
+**The Solution:** Figpack provides sophisticated visualization components that prepare efficient, hierarchical data representations. For raster plots, it creates a Zarr-based hierarchy of downsampled firing rates and time-segmented spike trains, enabling smooth, interactive visualization of large-scale neural activity. However, this preprocessing requires substantial backend computation.
+
+**The Problem:** Pre-computing these visualizations for every possible units table across the entire [DANDI Archive](https://dandiarchive.org) would be wasteful and impractical, as most visualizations may never be viewed.
+
+**How Runpack Solves This:** Runpack provides an on-demand computation service that acts as a bridge between Neurosift and computational resources:
+
+1. When a user opens a dataset in Neurosift and requests an advanced visualization (e.g., a Figpack raster plot), the Neurosift interface submits a computation job to Runpack
+2. A job runner—which can run on any computer with appropriate resources—picks up the job, performs the necessary computation, and uploads the resulting Figpack figure to cloud storage
+3. The result is cached, so subsequent visitors can instantly access the same visualization without re-computation
+4. This architecture allows resource-intensive computations to be performed on-demand only when needed, while still providing fast access to previously computed results
+
+Basic example of a Figpack raster plot view in Neurosift: [FigpackRasterPlot](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:FigpackRasterPlot|/units)
+
+Compared with the inefficient default raster plot that requires no precomputation: [Raster](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:Raster|/units)
+
+### General Purpose System
+
+Beyond its primary use case with Neurosift, Runpack is a flexible system for computing and caching diverse computational tasks. It provides:
 
 - **Centralized Job Queue**: Submit jobs through a Cloudflare Worker API
 - **Smart Caching**: Automatic deduplication and result caching based on job type and parameters
