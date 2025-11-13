@@ -1,9 +1,11 @@
 """Figpack NWB Video Preview job handler for ImageSeries visualization."""
 
 import threading
-import time
+import h5py
 from datetime import datetime
 from typing import Any, Callable, Dict
+
+import numpy as np
 
 from .base import JobHandler
 
@@ -118,8 +120,7 @@ class FigpackNwbVideoPreviewJob(JobHandler):
             # Extract metadata
             log("Extracting metadata...")
             try:
-                starting_time = X['starting_time'][()]
-                rate = X['starting_time'].attrs['rate']
+                starting_time, rate = _get_starting_time_and_rate(X)
                 data = X['data']
                 data_shape = data.shape
                 
@@ -224,3 +225,18 @@ class FigpackNwbVideoPreviewJob(JobHandler):
             'image_series_path': image_series_path,
             'num_frames': num_frames
         }
+
+
+def _get_starting_time_and_rate(X: h5py.Group):
+    if 'starting_time' in X:
+        starting_time = X['starting_time'][()]
+        rate = X['starting_time'].attrs['rate']
+    elif 'timestamps' in X:
+        first_timestamps = X['timestamps'][:100]
+        diffs = np.diff(first_timestamps)
+        rate = 1.0 / np.median(diffs)
+        starting_time = first_timestamps[0]
+    else:
+        starting_time = 0.0
+        rate = 30.0  # default to 30 Hz
+    return starting_time, rate
