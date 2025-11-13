@@ -192,7 +192,8 @@ class FigpackNwbVideoPreviewJob(JobHandler):
                 url = v.show(
                     title='Video Preview from NWB ImageSeries',
                     upload=True,
-                    open_in_browser=False
+                    open_in_browser=False,
+                    wait_for_input=False
                 )
                 log(f"Successfully uploaded! URL: {url}")
             except Exception as e:
