@@ -6,36 +6,45 @@ A distributed job computation and caching system built with Cloudflare Workers, 
 
 ### Motivation: On-Demand Computation for Neurosift
 
-Runpack was created to enable on-demand computation for [Neurosift](https://neurosift.app), a neurophysiology data visualization platform. The primary use case is to support advanced, interactive visualizations using [Figpack](https://flatironinstitute.github.io/figpack/) that require computational backend processing.
+Neurosift is designed to visualize NWB datasets directly from remote storage. For many types of data, this “stream-from-the-source” approach works well: Neurosift can load the relevant portion of the NWB file on the fly and display it interactively.
 
-**The Challenge:** When visualizing neurophysiology data, for example neural units tables containing hundreds or thousands of neurons recorded over long durations, traditional visualization approaches become inefficient and impractical. Rendering a complete raster plot of all spike times for such datasets in a browser is computationally prohibitive.
+However, some data objects, especially large or structurally complex ones, cannot be efficiently streamed or visualized this way. Examples include large units tables or high-resolution video recordings. In these cases, repeatedly fetching raw data from the source NWB file is too slow and too computationally expensive for interactive use.
 
-**The Solution:** Figpack provides sophisticated visualization components that prepare efficient, hierarchical data representations. For raster plots, it creates a Zarr-based hierarchy of downsampled firing rates and time-segmented spike trains, enabling smooth, interactive visualization of large-scale neural activity. However, this preprocessing requires substantial backend computation.
+### Where Figpack Comes In
 
-**The Problem:** Pre-computing these visualizations for every possible units table across the entire [DANDI Archive](https://dandiarchive.org) would be wasteful and impractical, as most visualizations may never be viewed.
+[Figpack](https://flatironinstitute.github.io/figpack/) addresses these limitations by producing optimized, visualization-ready data structures. For a raster plot, Figpack creates a Zarr-based hierarchy of downsampled firing rates and time-segmented spike trains, allowing smooth zooming and panning in the browser. For video previews, it prepares lightweight, browser-friendly representations instead of streaming full-resolution frames.
 
-**How Runpack Solves This:** Runpack provides an on-demand computation service that acts as a bridge between Neurosift and computational resources:
+The catch is that generating these Figpack structures requires non-trivial computation. And performing that preprocessing ahead of time for every dataset on the [DANDI Archive](https://dandiarchive.org) would be wasteful—many visualizations may never be requested.
 
-1. When a user opens a dataset in Neurosift and requests an advanced visualization (e.g., a Figpack raster plot), the Neurosift interface submits a computation job to Runpack
-2. A job runner—which can run on any computer with appropriate resources—picks up the job, performs the necessary computation, and uploads the resulting Figpack figure to cloud storage
-3. The result is cached, so subsequent visitors can instantly access the same visualization without re-computation
-4. This architecture allows resource-intensive computations to be performed on-demand only when needed, while still providing fast access to previously computed results
+### Runpack: The Glue Between Neurosift and Figpack
+
+Runpack provides the missing piece: **on-demand computation**. Instead of precomputing Figpack objects for the entire archive, Neurosift triggers computation only when a user explicitly requests an advanced Figpack-based view.
+
+Here’s how it works:
+
+1. A user opens a dataset in Neurosift and selects a Figpack-powered visualization (e.g., a Figpack raster plot or optimized video preview).
+2. Neurosift sends a computation request to Runpack describing what Figpack output is needed.
+3. A Runpack job runner (running on any suitable compute resource) retrieves the job, performs the Figpack preprocessing, and uploads the result to cloud storage.
+4. Neurosift loads the completed Figpack structure for fast, interactive visualization.
+5. The result is cached so future viewers can access it instantly without recomputation.
+
+This workflow ensures that computationally heavy preprocessing is done only when needed, while still delivering highly interactive performance for large or complex data objects.
 
 ### Raster Plots
 
-**Figpack raster plot** (fast, smooth, interactive):  
+**Optimized Figpack raster plot** (fast, smooth, interactive):
 [View optimized raster plot](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:FigpackRasterPlot|/units)
 
-**Default raster plot** (slow, unoptimized):  
-[View basic raster plot](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:Raster|/units)
+**Default raster plot** (unoptimized, streamed directly from NWB):
+[View default raster plot](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/6e7e9b91-0d66-45af-b646-dfb11e4d9967/download/&dandisetId=000946&dandisetVersion=draft&tab=view:Raster|/units)
 
 ### Video Previews
 
-**Figpack video preview** (optimized for browser playback):  
-[View optimized video preview](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/0040441c-b07e-4d79-a24b-f356633306aa/download/&dandisetId=001525&dandisetVersion=draft&tab=view:FigpackVideoPreview|/acquisition/StrobeImaging)
+**Optimized Figpack video preview for ImageSeries** (browser-friendly, precomputed):
+[View optimized video preview of ImageSeries](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/0040441c-b07e-4d79-a24b-f356633306aa/download/&dandisetId=001525&dandisetVersion=draft&tab=view:FigpackVideoPreview|/acquisition/StrobeImaging)
 
-**Default streaming view** (inefficient):  
-[View default streaming](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/0040441c-b07e-4d79-a24b-f356633306aa/download/&dandisetId=001525&dandisetVersion=draft&tab=/acquisition/StrobeImaging)
+**Default ImageSeries** (inefficient direct NWB streaming):
+[View default view of ImageSeries](https://neurosift.app/nwb?url=https://api.dandiarchive.org/api/assets/0040441c-b07e-4d79-a24b-f356633306aa/download/&dandisetId=001525&dandisetVersion=draft&tab=/acquisition/StrobeImaging)
 
 
 ### General Purpose System
