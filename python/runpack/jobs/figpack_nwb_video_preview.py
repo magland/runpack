@@ -176,7 +176,7 @@ class FigpackNwbVideoPreviewJob(JobHandler):
             # Create LossyVideo
             log("Creating LossyVideo...")
             try:
-                fps = min(rate, 30)  # Cap at 30 fps for reasonable playback
+                fps = rate if rate > 0 else 30
                 log(f"Using {fps} fps for video")
                 v = jv.LossyVideo(data_rgb, fps=fps)
                 log("Successfully created LossyVideo")
