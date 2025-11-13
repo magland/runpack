@@ -166,9 +166,14 @@ class FigpackNwbVideoPreviewJob(JobHandler):
             # Convert to RGB format (T x H x W x 3)
             log("Converting to RGB format...")
             try:
-                # data_array is currently T x H x W
-                # Add RGB channels (grayscale)
-                data_rgb = np.repeat(data_array[:, :, :, np.newaxis], 3, axis=3)
+                # data_array is either T x H x W or T x H x W x C
+                if data_array.ndim == 3:
+                    # Grayscale to RGB
+                    data_rgb = np.repeat(data_array[:, :, :, np.newaxis], 3, axis=3)
+                elif data_array.ndim == 4 and data_array.shape[3] == 3:
+                    data_rgb = data_array
+                else:
+                    raise ValueError(f"Unsupported data shape for RGB conversion: {data_array.shape}")
                 log(f"RGB data shape: {data_rgb.shape}")
             except Exception as e:
                 log(f"Failed to convert to RGB: {str(e)}")
