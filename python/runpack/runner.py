@@ -273,13 +273,17 @@ class JobRunner:
                 for _ in range(interval):
                     if not self.running:
                         break
+                    new_job_notification = False
                     if notify_relay_subscriber is not None:
                         messages = notify_relay_subscriber.get_messages()
                         for msg in messages:
                             message = msg['message']
                             if message and 'type' in message and message['type'] == 'new_job':
                                 logger.info("Received new job notification via NotifyRelay")
+                                new_job_notification = True
                                 break
+                    if new_job_notification:
+                        break
                     time.sleep(1)
         
         # Shutdown
