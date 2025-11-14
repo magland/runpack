@@ -239,6 +239,7 @@ class JobRunner:
             print('NotifyRelay not configured. The environment variable NOTIFY_RELAY_BASE_URL or NOTIFY_RELAY_SUBSCRIBE_KEY is missing.')
         
         while self.running:
+            job_executed = False
             try:
                 job_executed = self.poll_and_execute()
 
@@ -267,7 +268,7 @@ class JobRunner:
                 logger.error(f"Unexpected error in main loop: {e}", exc_info=True)
             
             # Sleep before next poll, but check for shutdown frequently
-            if self.running:
+            if self.running and not job_executed:
                 # Sleep in 1-second intervals to allow for responsive shutdown
                 interval = self.current_poll_interval if notify_relay_subscriber is None else 300
                 for _ in range(interval):
