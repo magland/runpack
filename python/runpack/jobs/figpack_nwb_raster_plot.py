@@ -1,7 +1,7 @@
 """Figpack NWB Raster Plot job handler for NWB units data visualization."""
 
 import threading
-import time
+import json
 from datetime import datetime
 from typing import Any, Callable, Dict
 
@@ -33,6 +33,9 @@ class FigpackNwbRasterPlotJob(JobHandler):
         
         if 'units_path' not in input_params:
             raise ValueError("Missing required parameter: 'units_path'")
+        
+        dandiset_id = input_params.get('dandiset_id', '')
+        neurosift_url = input_params.get('neurosift_url', '')
         
         nwb_url = input_params['nwb_url']
         units_path = input_params['units_path']
@@ -118,6 +121,12 @@ class FigpackNwbRasterPlotJob(JobHandler):
             try:
                 url = v.show(
                     title='RUNPACK: Raster Plot from NWB Units Table',
+                    description=json.dumps({
+                        'dandiset_id': dandiset_id,
+                        'neurosift_url': neurosift_url,
+                        'nwb_url': nwb_url,
+                        'units_path': units_path,
+                    }),
                     upload=True,
                     wait_for_input=False
                 )
@@ -147,6 +156,8 @@ class FigpackNwbRasterPlotJob(JobHandler):
         return {
             'figpack_url': url,
             'nwb_url': nwb_url,
+            'dandiset_id': dandiset_id,
+            'neurosift_url': neurosift_url,
             'units_path': units_path,
             'console_output': final_console
         }

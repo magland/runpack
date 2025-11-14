@@ -1,6 +1,7 @@
 """Figpack NWB Pose Estimation job handler for pose tracking data visualization."""
 
 import threading
+import json
 import time
 from datetime import datetime
 from typing import Any, Callable, Dict
@@ -34,6 +35,9 @@ class FigpackNwbPoseEstimationJob(JobHandler):
         
         if 'path' not in input_params:
             raise ValueError("Missing required parameter: 'path'")
+        
+        dandiset_id = input_params.get('dandiset_id', '')
+        neurosift_url = input_params.get('neurosift_url', '')
         
         nwb_url = input_params['nwb_url']
         path = input_params['path']
@@ -119,6 +123,12 @@ class FigpackNwbPoseEstimationJob(JobHandler):
             try:
                 url = view.show(
                     title='RUNPACK: Pose Estimation from NWB',
+                    description=json.dumps({
+                        'dandiset_id': dandiset_id,
+                        'neurosift_url': neurosift_url,
+                        'nwb_url': nwb_url,
+                        'path': path,
+                    }),
                     upload=True,
                     wait_for_input=False
                 )
@@ -148,6 +158,8 @@ class FigpackNwbPoseEstimationJob(JobHandler):
         return {
             'figpack_url': url,
             'nwb_url': nwb_url,
+            'dandiset_id': dandiset_id,
+            'neurosift_url': neurosift_url,
             'path': path,
             'console_output': final_console
         }

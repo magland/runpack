@@ -1,6 +1,7 @@
 """Figpack NWB Video Preview job handler for ImageSeries visualization."""
 
 import threading
+import json
 import h5py
 from datetime import datetime
 from typing import Any, Callable, Dict
@@ -35,6 +36,9 @@ class FigpackNwbVideoPreviewJob(JobHandler):
         
         if 'image_series_path' not in input_params:
             raise ValueError("Missing required parameter: 'image_series_path'")
+        
+        dandiset_id = input_params.get('dandiset_id', '')
+        neurosift_url = input_params.get('neurosift_url', '')
         
         nwb_url = input_params['nwb_url']
         image_series_path = input_params['image_series_path']
@@ -197,6 +201,12 @@ class FigpackNwbVideoPreviewJob(JobHandler):
             try:
                 url = v.show(
                     title='RUNPACK: Video Preview from NWB ImageSeries',
+                    description=json.dumps({
+                        'dandiset_id': dandiset_id,
+                        'neurosift_url': neurosift_url,
+                        'nwb_url': nwb_url,
+                        'image_series_path': image_series_path,
+                    }),
                     upload=True,
                     open_in_browser=False,
                     wait_for_input=False
@@ -223,10 +233,12 @@ class FigpackNwbVideoPreviewJob(JobHandler):
             console_output=final_console
         )
         
-        # Return result with the figurl URL (without console_output)
+        # Return result with the figurl URL
         return {
             'figpack_url': url,
             'nwb_url': nwb_url,
+            'dandiset_id': dandiset_id,
+            'neurosift_url': neurosift_url,
             'image_series_path': image_series_path,
             'num_frames': num_frames
         }
