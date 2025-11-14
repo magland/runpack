@@ -25,7 +25,7 @@ classifiers = [
 dependencies = [
     "click>=8.1.0",
     "requests>=2.31.0",
-    "notifyrelay-client"
+    "notifyrelay"
 ]
 
 [project.scripts]
