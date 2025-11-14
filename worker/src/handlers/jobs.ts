@@ -313,13 +313,13 @@ const reportNewJobToNotifyRelay = async (env: Env, jobInfo: {jobId: string, jobH
       },
       body: JSON.stringify({
         topic: 'runpack_notifications',
-        message: {
+        message: JSON.stringify({
           type: 'new_job',
           job_id: jobInfo.jobId,
           job_hash: jobInfo.jobHash,
           job_type: jobInfo.jobType,
           timestamp: Date.now(),
-        },
+        }),
       }),
     });
 

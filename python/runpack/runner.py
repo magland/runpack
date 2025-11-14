@@ -229,7 +229,7 @@ class JobRunner:
                 subscriber_name=NOTIFY_RELAY_SUBSCRIBE_ID
             )
 
-            notify_relay_subscriber.subscribe("runpack_notifications", json_mode=True)
+            notify_relay_subscriber.subscribe(["runpack_notifications"], json_mode=True)
             notify_relay_subscriber.start()
 
             print(f'Using NotifyRelay at {NOTIFY_RELAY_BASE_URL}')
@@ -275,7 +275,6 @@ class JobRunner:
                         break
                     if notify_relay_subscriber is not None:
                         messages = notify_relay_subscriber.get_messages()
-                        print(f'Checking NotifyRelay messages, found {len(messages)}')
                         for msg in messages:
                             if msg and 'type' in msg and msg['type'] == 'new_job':
                                 logger.info("Received new job notification via NotifyRelay")
