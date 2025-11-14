@@ -1,9 +1,11 @@
 """Main runner loop for executing Runpack jobs."""
 
 import logging
+import os
 import signal
 import time
 from typing import Optional
+from notifyrelay import NotifyRelayClient, Subscriber as NotifyRelaySubscriber
 
 from .client import RunpackClient
 from .config import (
@@ -17,6 +19,10 @@ from .jobs import get_job_handler, get_supported_job_types
 
 
 logger = logging.getLogger(__name__)
+
+NOTIFY_RELAY_BASE_URL = os.getenv("NOTIFY_RELAY_BASE_URL", None)
+NOTIFY_RELAY_SUBSCRIBE_KEY = os.getenv("NOTIFY_RELAY_SUBSCRIBE_KEY", None)
+NOTIFY_RELAY_SUBSCRIBE_ID = os.getenv("NOTIFY_RELAY_SUBSCRIBE_ID", None)
 
 
 class JobRunner:
@@ -156,7 +162,7 @@ class JobRunner:
         
         finally:
             self.current_job_id = None
-    
+
     def poll_and_execute(self) -> bool:
         """Poll for available jobs and execute them.
         
@@ -210,26 +216,49 @@ class JobRunner:
         # Main loop
         logger.info("Entering main polling loop...")
         logger.info(f"Initial poll interval: {self.current_poll_interval} seconds")
+
+        if NOTIFY_RELAY_BASE_URL and NOTIFY_RELAY_SUBSCRIBE_KEY and NOTIFY_RELAY_SUBSCRIBE_ID:
+            notify_relay_client = NotifyRelayClient(
+                base_url=NOTIFY_RELAY_BASE_URL,
+                subscribe_key=NOTIFY_RELAY_SUBSCRIBE_KEY
+            )
+
+            # Create subscriber
+            notify_relay_subscriber = notify_relay_client.create_subscriber(
+                subscriber_id=NOTIFY_RELAY_SUBSCRIBE_ID,
+                subscriber_name=NOTIFY_RELAY_SUBSCRIBE_ID
+            )
+
+            notify_relay_subscriber.subscribe("runpack_notifications", json_mode=True)
+            notify_relay_subscriber.start()
+
+            print(f'Using NotifyRelay at {NOTIFY_RELAY_BASE_URL}')
+        else:
+            notify_relay_client = None
+            notify_relay_subscriber = None
+            print('NotifyRelay not configured. The environment variable NOTIFY_RELAY_BASE_URL or NOTIFY_RELAY_SUBSCRIBE_KEY is missing.')
         
         while self.running:
             try:
                 job_executed = self.poll_and_execute()
-                
+
                 # Adjust polling interval based on whether a job was executed
                 if job_executed:
                     # Job was executed - reset to minimum interval
-                    if self.current_poll_interval != MIN_POLL_INTERVAL:
-                        self.current_poll_interval = MIN_POLL_INTERVAL
-                        logger.info(f"Job executed - resetting poll interval to {MIN_POLL_INTERVAL} seconds")
+                    if notify_relay_subscriber is None:
+                        if self.current_poll_interval != MIN_POLL_INTERVAL:
+                            self.current_poll_interval = MIN_POLL_INTERVAL
+                            logger.info(f"Job executed - resetting poll interval to {MIN_POLL_INTERVAL} seconds")
                 else:
                     # No job executed - increase interval (with max cap)
-                    old_interval = self.current_poll_interval
-                    self.current_poll_interval = min(
-                        self.current_poll_interval + POLL_INTERVAL_INCREMENT,
-                        MAX_POLL_INTERVAL
-                    )
-                    if self.current_poll_interval != old_interval:
-                        logger.info(f"No jobs available - increasing poll interval to {self.current_poll_interval} seconds")
+                    if notify_relay_subscriber is None:
+                        old_interval = self.current_poll_interval
+                        self.current_poll_interval = min(
+                            self.current_poll_interval + POLL_INTERVAL_INCREMENT,
+                            MAX_POLL_INTERVAL
+                        )
+                        if self.current_poll_interval != old_interval:
+                            logger.info(f"No jobs available - increasing poll interval to {self.current_poll_interval} seconds")
                 
             except KeyboardInterrupt:
                 # Handled by signal handler
@@ -240,15 +269,27 @@ class JobRunner:
             # Sleep before next poll, but check for shutdown frequently
             if self.running:
                 # Sleep in 1-second intervals to allow for responsive shutdown
-                for _ in range(self.current_poll_interval):
+                interval = self.current_poll_interval if notify_relay_subscriber is None else 300
+                for _ in range(interval):
                     if not self.running:
                         break
+                    if notify_relay_subscriber is not None:
+                        messages = notify_relay_subscriber.get_messages()
+                        for msg in messages:
+                            if msg and 'type' in msg and msg['type'] == 'new_job':
+                                logger.info("Received new job notification via NotifyRelay")
+                                break
                     time.sleep(1)
         
         # Shutdown
         if self.current_job_id:
             logger.warning(f"Shutting down with job {self.current_job_id} still in progress")
         
+        if notify_relay_subscriber:
+            logger.info("Stopping NotifyRelay subscriber...")
+            notify_relay_subscriber.stop()
+            logger.info("NotifyRelay subscriber stopped")
+
         logger.info("Runner stopped")
 
 
