@@ -4,6 +4,8 @@ export interface Env {
   SUBMIT_API_KEY: string;
   RUNNER_API_KEY: string;
   ADMIN_API_KEY: string;
+  NOTIFY_RELAY_BASE_URL?: string;
+  NOTIFY_RELAY_PUBLISH_KEY?: string;
 }
 
 // Job statuses

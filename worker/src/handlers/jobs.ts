@@ -95,6 +95,12 @@ export async function handleSubmitJob(request: Request, env: Env): Promise<Respo
     const jobId = generateId();
     await createJob(env, jobId, jobHash, job_type, JSON.stringify(input_params));
 
+    await reportNewJobToNotifyRelay(env, {
+      jobId: jobId,
+      jobHash: jobHash,
+      jobType: job_type
+    });
+
     const response: SubmitJobResponse = {
       job_id: jobId,
       status: 'pending',
@@ -288,3 +294,41 @@ export async function handleGetJobStatus(request: Request, env: Env, jobId: stri
     });
   }
 }
+
+const reportNewJobToNotifyRelay = async (env: Env, jobInfo: {jobId: string, jobHash: string, jobType: string}) => {
+  const NOTIFY_RELAY_BASE_URL = env.NOTIFY_RELAY_BASE_URL;
+  const NOTIFY_RELAY_PUBLISH_KEY = env.NOTIFY_RELAY_PUBLISH_KEY;
+
+  if (!NOTIFY_RELAY_BASE_URL || !NOTIFY_RELAY_PUBLISH_KEY) {
+    console.warn('NotifyRelay configuration missing. Skipping new job notification.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${NOTIFY_RELAY_BASE_URL}/publish`, {
+      method: 'POST',
+      headers: {
+        'Authorization': NOTIFY_RELAY_PUBLISH_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        topic: 'runpack_notifications',
+        message: {
+          type: 'new_job',
+          job_id: jobInfo.jobId,
+          job_hash: jobInfo.jobHash,
+          job_type: jobInfo.jobType,
+          timestamp: Date.now(),
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to publish job notification: ${response.statusText}`);
+    }
+
+    console.log('Successfully published new job notification to NotifyRelay');
+  } catch (error) {
+    console.error('Error publishing job notification to NotifyRelay:', error);
+  }
+};

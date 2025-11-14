@@ -71,6 +71,8 @@ npm run db:init
 wrangler secret put SUBMIT_API_KEY
 wrangler secret put RUNNER_API_KEY
 wrangler secret put ADMIN_API_KEY
+wrangler secret put NOTIFY_RELAY_PUBLISH_KEY
+wrangler secret put NOTIFY_RELAY_BASE_URL
 ```
 
 ### 5. Deploy
