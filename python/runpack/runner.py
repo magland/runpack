@@ -275,9 +275,9 @@ class JobRunner:
                         break
                     if notify_relay_subscriber is not None:
                         messages = notify_relay_subscriber.get_messages()
-                        print(f'Checking NotifyRelay messages, found {len(messages)}')
                         for msg in messages:
-                            if msg and 'type' in msg and msg['type'] == 'new_job':
+                            message = msg['message']
+                            if message and 'type' in message and message['type'] == 'new_job':
                                 logger.info("Received new job notification via NotifyRelay")
                                 break
                     time.sleep(1)
