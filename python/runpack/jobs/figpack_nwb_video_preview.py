@@ -196,7 +196,7 @@ class FigpackNwbVideoPreviewJob(JobHandler):
             
             try:
                 url = v.show(
-                    title='Video Preview from NWB ImageSeries',
+                    title='RUNPACK: Video Preview from NWB ImageSeries',
                     upload=True,
                     open_in_browser=False,
                     wait_for_input=False

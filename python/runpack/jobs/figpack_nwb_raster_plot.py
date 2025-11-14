@@ -117,7 +117,7 @@ class FigpackNwbRasterPlotJob(JobHandler):
             
             try:
                 url = v.show(
-                    title='Raster Plot from NWB Units Table',
+                    title='RUNPACK: Raster Plot from NWB Units Table',
                     upload=True,
                     wait_for_input=False
                 )
